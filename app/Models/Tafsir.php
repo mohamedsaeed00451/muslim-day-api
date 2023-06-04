@@ -11,4 +11,5 @@ class Tafsir extends Model
 
     protected $fillable = ['text','surah_id','ayah_id'];
     protected $hidden = ['created_at','updated_at'];
+
 }

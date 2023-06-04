@@ -28,15 +28,24 @@ Route::group(
 
          //*********************** Quran ***************************//
         Route::controller(QuranController::class)->group(function (){
+
             //*********************** Surahs ***************************//
             Route::get('/surahs','getSurahs');
 
             //*********************** Ayahs ***************************//
             Route::get('/surah/ayahs/{id}','getAyahsSurah');
 
+            //*********************** Tafsirs ***************************//
+            Route::get('/surah/tafsirs/{id}','getTafsirSurah');
+            Route::get('/ayah/tafsir/{id}','getTafsirAyah');
 
-
+            //*********************** Reciters ***************************//
+            Route::get('/reciters','getReciters');
+            Route::get('/reciter/surahs/{id}','getReciterSurahs');
+            Route::get('/surah/reciters/{id}','getSurahReciters');
         });
+
+
 
 });
 

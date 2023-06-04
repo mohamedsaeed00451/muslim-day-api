@@ -19,7 +19,7 @@ class Ayah extends Model
 
     public function tafsir()
     {
-        return $this->belongsTo(Tafsir::class,'ayah_id');
+        return $this->hasOne(Tafsir::class,'ayah_id');
     }
 
 }

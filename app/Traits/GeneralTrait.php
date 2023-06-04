@@ -15,4 +15,30 @@ trait GeneralTrait
         ]);
     }
 
+	public function getPath($type,$name)
+	{
+		if ($type == 'image_r') {
+			$path = 'images/reciters/'.$name;
+		}
+
+		if ($type == 'image_u') {
+			$path = 'images/users/'.$name;
+		}
+
+		if ($type == 'audios') {
+			$path = 'audios/'.$name;
+		}
+
+		if ($type == 'videos') {
+			$path = 'videos/'.$name;
+		}
+
+		$url = url('/public/uploads/'.$path);
+		if ($url) {
+			return null;
+		}
+
+		return $url;
+	}
+
 }
