@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\User\AyahController;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,6 +11,9 @@ use App\Http\Controllers\Api\User\AyahController;
 |
 */
 
-//Route::get('/add-surahs',[SurahController::class,'addSurahs']);
 
-//Route::get('/add-ayahs',[AyahController::class,'addAyahs']);
+
+
+
+
+
