@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\User\AyahController;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +16,5 @@ use App\Http\Controllers\Api\User\AyahController;
 //Route::get('/add-surahs',[SurahController::class,'addSurahs']);
 
 //Route::get('/add-ayahs',[AyahController::class,'addAyahs']);
+
+

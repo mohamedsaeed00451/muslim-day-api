@@ -66,5 +66,6 @@ class Kernel extends HttpKernel
 
         'check.api.password' => \App\Http\Middleware\Api\CheckApiPassword::class,
         'check.lang' => \App\Http\Middleware\Api\CheckLanguage::class,
+        'jwt.verify' => \App\Http\Middleware\Api\AuthenticateJWT::class,
     ];
 }
