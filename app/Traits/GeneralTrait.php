@@ -34,9 +34,6 @@ trait GeneralTrait
 		}
 
 		$url = url('/public/uploads/'.$path);
-		if ($url) {
-			return null;
-		}
 
 		return $url;
 	}

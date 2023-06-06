@@ -20,5 +20,6 @@ class DatabaseSeeder extends Seeder
         // ]);
         //$this->call(CreateReciters::class);
         //$this->call(CreateSurahReciters::class);
+        //$this->call(AddAudios::class);
     }
 }

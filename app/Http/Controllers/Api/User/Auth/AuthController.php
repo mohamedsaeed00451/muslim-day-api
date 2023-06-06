@@ -5,18 +5,86 @@ namespace App\Http\Controllers\Api\User\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\DeviceToken;
 use App\Models\User;
+use App\Notifications\EmailVerification;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
+use Otp;
 use Tymon\JWTAuth\Facades\JWTAuth;
-
 
 class AuthController extends Controller
 {
     use GeneralTrait;
+
+    private $otp;
+
+    public function __construct()
+    {
+        $this->otp = new Otp;
+    }
+
+    public function emailVerify(Request $request) //email Verify otp
+    {
+        try {
+
+            $rules = [
+                'email' => 'required|email|exists:users,email',
+                'otp' => 'required|min:6|max:6'
+            ];
+
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails())
+                return $this->responseMessage(400, false, $validation->messages());
+
+
+            $otpVerify = $this->otp->validate($request->email, $request->otp);
+
+            if (!$otpVerify->status)
+                return $this->responseMessage(401, false, $otpVerify);
+
+            $user = User::where('email', $request->email)->first();
+            $user->email_verified_at = now(); //update email_verified_at to now time
+            $user->save();
+
+            $token = JWTAuth::fromUser($user);
+            $user->access_token = $token;
+            $user->token_type = 'bearer';
+            $user->expires_in = auth()->factory()->getTTL() * 60;
+            return $this->responseMessage(200, true, 'success', $user);
+
+        } catch (\Exception $e) {
+
+            return $this->responseMessage(400, false, 'an error occurred');
+
+        }
+    }
+
+    public function resendOtpVerification(Request $request)
+    {
+        try {
+            $rules = [
+                'email' => 'required|email|exists:users,email',
+            ];
+
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails())
+                return $this->responseMessage(400, false, $validation->messages());
+
+            $user = $user = User::where('email', $request->email)->first();
+            $user->notify(new EmailVerification());
+            return $this->responseMessage(200, true, 'Email verification Has Been Send');
+
+        } catch (\Exception $e) {
+
+            return $this->responseMessage(400, false, 'an error occurred');
+
+        }
+    }
 
     public function addDeviceToken(Request $request)
     {
@@ -44,11 +112,11 @@ class AuthController extends Controller
         }
     }
 
-    public function login(Request $request)
+    public function login(Request $request) //login normal
     {
         $rules = [
-            'email' => 'required|email',
-            'password' => 'required'
+            'email' => 'required|email|exists:users,email',
+            'password' => 'required|string'
         ];
 
         $validation = validator::make($request->all(), $rules);
@@ -62,19 +130,24 @@ class AuthController extends Controller
         if (!$token = auth()->attempt($credentials)) {
             return $this->responseMessage(400, false, 'email or password error');
         }
+
         $user = Auth::user();
+
+        if ($user->email_verified_at == null)
+            return $this->responseMessage(202, false, 'Email Needed To Verify');
+
         $user->access_token = $token;
         $user->token_type = 'bearer';
         $user->expires_in = auth()->factory()->getTTL() * 60;
         return $this->responseMessage(200, true, 'success', $user);
     }
 
-    public function register(Request $request)
+    public function register(Request $request) //register new user
     {
         $rules = [
             'name' => 'required|string|between:2,100',
             'email' => 'required|email|string|max:100|unique:users,email',
-            'password' => 'required|string|min:8'
+            'password' => 'required|string|min:8|confirmed'
         ];
 
         $validation = validator::make($request->all(), $rules);
@@ -89,7 +162,9 @@ class AuthController extends Controller
             ]
         ));
 
-        return $this->responseMessage(201, true, 'success');
+        $user->notify(new EmailVerification()); //send Email verification
+
+        return $this->responseMessage(201, true, 'Email verification Has Been Send');
     }
 
     public function profile()
@@ -201,7 +276,7 @@ class AuthController extends Controller
     public function updatePassword(Request $request)
     {
         $rules = [
-            'password' => 'required|string|min:8'
+            'password' => 'required|string|min:8|confirmed'
         ];
 
         $validation = validator::make($request->all(), $rules);

@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Controllers\Api\User\Auth\AuthController;
-use App\Http\Controllers\Api\User\Prayers\PrayerController;
-use App\Http\Controllers\Api\User\Qurans\QuranController;
+use App\Http\Controllers\Api\User\{
+    Auth\AuthController,
+    Prayers\PrayerController,
+    Qurans\QuranController
+};
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +40,8 @@ Route::group(
 
     ,function (){
 
+            //*********************** Auth ***************************//
+
         Route::group([
 
             'controller' => AuthController::class ,
@@ -51,15 +55,20 @@ Route::group(
 
             //*********************** login ***************************//
             Route::post('/login', 'login');
-
+            //*********************** Add Device Token ***************************//
+            Route::post('/device-token','addDeviceToken');
+            //*********************** Register ***************************//
             Route::post('/register', 'register');
+            //*********************** Email ***************************//
+            Route::post('/email-verify-otp', 'emailVerify'); //check code
+            Route::get('/email-verify-otp', 'resendOtpVerification'); // Resend Code
 
-            Route::middleware(['jwt.verify'])->group(function (){
+            Route::middleware(['jwt.verify'])->group(function (){ //Auth JWT
 
-                Route::post('/logout', 'logout');
-                Route::post('/refresh', 'refresh');
-                Route::post('/profile', 'profile');
-                Route::post('/password', 'updatePassword');
+                Route::post('/logout', 'logout'); //Logout
+                Route::post('/refresh', 'refresh'); //Refresh Token
+                Route::post('/profile', 'profile'); //Get Profile
+                Route::post('/password', 'updatePassword'); //Update Password
 
             });
         });
@@ -81,14 +90,11 @@ Route::group(
             Route::get('/reciters','getReciters');
             Route::get('/reciter/surahs/{id}','getReciterSurahs');
             Route::get('/surah/reciters/{id}','getSurahReciters');
+
+            //*********************** Audios ***************************//
+            Route::get('/surah/reciter-audio','getSurahAudio');
         });
 
-        //*********************** Auth ***************************//
-        Route::controller(AuthController::class)->group(function (){
-            //*********************** Add Device Token ***************************//
-            Route::post('/device-token','addDeviceToken');
-
-        });
 
         //*********************** Prayers ***************************//
         Route::controller(PrayerController::class)->group(function (){
