@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\User\Notifications\HijriController;
 use Illuminate\Support\Facades\Route;
 
 /*

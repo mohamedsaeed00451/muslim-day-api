@@ -169,6 +169,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Ichtrojan\Otp\OtpServiceProvider::class,
+        Alkoumi\LaravelHijriDate\LaravelHijriDateServiceProvider::class,
     ])->toArray(),
 
     /*

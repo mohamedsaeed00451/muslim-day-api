@@ -105,7 +105,15 @@ class AuthController extends Controller
                 'device_token' => $request->device_token
             ]);
 
-            return $this->responseMessage(200, true, 'success');
+            $dayType = 'Day';
+            if ($this->getRamadan()) {
+                $dayType = 'Ramadan';
+            }
+            if ($this->getEidAlFitr() || $this->getEidAlAdha()) {
+                $dayType = 'Eid';
+            }
+
+            return $this->responseMessage(200, true, 'success',['day_type' => $dayType,'types' => ['Day','Eid','Ramadan']]);
 
         } catch (\Exception $e) {
             return $this->responseMessage(400, false, 'an error occurred');
@@ -181,16 +189,10 @@ class AuthController extends Controller
 
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
-    }
-
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
+        $data['access_token'] = auth()->refresh();
+        $data['token_type'] = 'bearer';
+        $data['expires_in'] = auth()->factory()->getTTL() * 60;
+        return $this->responseMessage(200, true, 'success',$data);
     }
 
     public function loginWithGoogle(Request $request)
