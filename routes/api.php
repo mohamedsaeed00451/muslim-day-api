@@ -1,6 +1,7 @@
 <?php
 
-use App\Http\Controllers\Api\User\Notifications\HijriController;
+use App\Http\Controllers\Api\User\Notifications\NotificationController;
+use App\Http\Controllers\Api\User\Prayers\PrayerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 //Route::get('/add-surahs',[SurahController::class,'addSurahs']);
 
-//Route::get('/add-ayahs',[AyahController::class,'addAyahs']);
+//Route::get('/add-ayahs',[SurahController::class,'addAyahs']);
 
 
+//Route::get('/test',[PrayerController::class,'updatePrayerTimes']);
+
+//Route::get('/test',[NotificationController::class,'NotificationDuhaPrayer']);

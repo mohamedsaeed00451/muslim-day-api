@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('prayers', function (Blueprint $table) {
             $table->id();
-            $table->string('name_ar');
-            $table->string('name_en');
+            $table->string('type');
             $table->time('time');
             $table->timestamps();
         });

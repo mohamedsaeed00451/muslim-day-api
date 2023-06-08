@@ -3,11 +3,28 @@
 namespace App\Traits;
 
 use Alkoumi\LaravelHijriDate\Hijri;
+use App\Models\DeviceToken;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 trait GeneralTrait
 {
 
-    public function responseMessage($code,$Status,$Message = null ,$data = null)
+    public function sendNotifications($title, $body, $sound = 'default')
+    {
+        $message = CloudMessage::fromArray([
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+                'sound' => $sound
+            ],
+        ]);
+        $tokens = DeviceToken::all()->pluck('device_token')->toArray();
+        return Firebase::messaging()->sendMulticast($message, $tokens);
+
+    }
+
+    public function responseMessage($code, $Status, $Message = null, $data = null)
     {
         return response()->json([
             'code' => $code,
@@ -17,28 +34,26 @@ trait GeneralTrait
         ]);
     }
 
-	public function getPath($type,$name)
-	{
-		if ($type == 'image_r') {
-			$path = 'images/reciters/'.$name;
-		}
+    public function getPath($type, $name)
+    {
+        if ($type == 'image_r') {
+            $path = 'images/reciters/' . $name;
+        }
 
-		if ($type == 'image_u') {
-			$path = 'images/users/'.$name;
-		}
+        if ($type == 'image_u') {
+            $path = 'images/users/' . $name;
+        }
 
-		if ($type == 'audios') {
-			$path = 'audios/'.$name;
-		}
+        if ($type == 'audios') {
+            $path = 'audios/' . $name;
+        }
 
-		if ($type == 'videos') {
-			$path = 'videos/'.$name;
-		}
+        if ($type == 'videos') {
+            $path = 'videos/' . $name;
+        }
 
-		$url = url('/public/uploads/'.$path);
-
-		return $url;
-	}
+        return url('/public/uploads/' . $path);
+    }
 
     public function getRamadan()
     {
@@ -94,7 +109,7 @@ trait GeneralTrait
     {
         $month = Hijri::Date('m');
         $day = Hijri::Date('j');
-        if ($month == '12' && $day == '09')
+        if ($month == '12' && $day == '08') // to get after arafat one day
             return true;
 
         return false;
@@ -104,7 +119,7 @@ trait GeneralTrait
     {
         $month = Hijri::Date('m');
         $day = Hijri::Date('j');
-        if ($month == '12' && $day == '1') {
+        if ($month == '11' && $day == '30') { // to get after Dhul Hujjah one day
             return true;
         }
         return false;
@@ -115,7 +130,7 @@ trait GeneralTrait
         $month = Hijri::Date('m');
         $day = Hijri::Date('j');
         if ($month == '01') {
-            if (in_array($day, ['09', '10']))
+            if (in_array($day, ['08', '09']))
                 return true;
         }
         return false;
@@ -124,7 +139,7 @@ trait GeneralTrait
     public function getWhiteDaysFastingDays()
     {
         $day = Hijri::Date('j');
-        if (in_array($day, ['13', '14', '15']))
+        if (in_array($day, ['12', '13', '14']))
             return true;
 
         return false;
@@ -134,17 +149,9 @@ trait GeneralTrait
     {
         $month = Hijri::Date('m');
         $day = Hijri::Date('j');
-        if ($month == '10' && $day == '01')
+        if ($month == '09' && $day == '30')
             return true;
 
-        return false;
-    }
-
-    public function getMondayAndThursdayFastingDays()
-    {
-        $dayName = Hijri::Date('l');
-        if ($dayName == 'الخميس' || $dayName == 'الأثنين')
-            return true;
         return false;
     }
 
