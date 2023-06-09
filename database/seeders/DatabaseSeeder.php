@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+        //$this->call(CreateSurahs::class);
+        //$this->call(CreateAyahs::class);
         //$this->call(CreateReciters::class);
         //$this->call(CreateSurahReciters::class);
         //$this->call(AddAudios::class);

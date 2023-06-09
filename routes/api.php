@@ -15,11 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-//Route::get('/add-surahs',[SurahController::class,'addSurahs']);
-
-//Route::get('/add-ayahs',[SurahController::class,'addAyahs']);
-
-
 //Route::get('/test',[PrayerController::class,'updatePrayerTimes']);
 
 //Route::get('/test',[NotificationController::class,'NotificationDuhaPrayer']);

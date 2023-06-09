@@ -7,6 +7,7 @@ use App\Models\Audio;
 use App\Models\Ayah;
 use App\Models\Reciter;
 use App\Models\Surah;
+use App\Models\Video;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -113,69 +114,17 @@ class QuranController extends Controller
         return $this->responseMessage(200, true, 'success', $audio);
     }
 
-
-    //************************************ store ***************************************//
-
-    public function addSurahs()
+    public function getVideos()
     {
         try {
-            $response = Http::get('https://api.alquran.cloud/v1/quran/quran-uthmani');
-            $data = $response->json();
-
-            $new_data = $data['data']['surahs'];
-            foreach ($new_data as $one) {
-
-                Surah::create([
-                    'name_ar' => $one['name'],
-                    'name_en' => $one['englishName']
-                ]);
-
+            $videos = Video::all();
+            foreach ($videos as $video) {
+                $video->video = $this->getPath('videos', $video->video);
             }
-            return 'ok';
+            return $this->responseMessage(200, true, 'success', $videos);
         } catch (\Exception $e) {
-            return response()->json($e->getMessage());
+            return $this->responseMessage(400, false, $e->getMessage());
         }
     }
 
-    public function addAyahs()
-    {
-        try {
-            $response = Http::get('https://api.alquran.cloud/v1/quran/quran-uthmani');
-            $data = $response->json();
-
-            $new_data = $data['data']['surahs'];
-            foreach ($new_data as $one) {
-                $surahNumber = $one['number'];
-                foreach ($one['ayahs'] as $o) {
-
-                    $ayahNumberInSursh = $o['numberInSurah'];
-                    $text = $o['text'];
-                    $juz = $o['juz'];
-                    $manzil = $o['manzil'];
-                    $page = $o['page'];
-                    $ruku = $o['ruku'];
-                    $hizbQuarter = $o['hizbQuarter'];
-                    $sajda = $o['sajda'];
-                    if (is_array($sajda)) {
-                        $sajda = true;
-                    }
-
-                    Ayah::create([
-                        'text' => $text,
-                        'juz' => $juz,
-                        'manzil' => $manzil,
-                        'page' => $page,
-                        'ruku' => $ruku,
-                        'hizbQuarter' => $hizbQuarter,
-                        'sajda' => $sajda,
-                        'surah_id' => $surahNumber,
-                        'number_in_surah' => $ayahNumberInSursh
-                    ]);
-                }
-            }
-            return 'ok';
-        } catch (\Exception $e) {
-            return response()->json($e->getMessage());
-        }
-    }
 }

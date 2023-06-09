@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\User\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\DailyTracker;
 use App\Models\DeviceToken;
 use App\Models\User;
 use App\Notifications\EmailVerification;
@@ -113,7 +114,7 @@ class AuthController extends Controller
                 $dayType = 'Eid';
             }
 
-            return $this->responseMessage(200, true, 'success',['day_type' => $dayType,'types' => ['Day','Eid','Ramadan']]);
+            return $this->responseMessage(200, true, 'success', ['day_type' => $dayType, 'types' => ['Day', 'Eid', 'Ramadan']]);
 
         } catch (\Exception $e) {
             return $this->responseMessage(400, false, 'an error occurred');
@@ -122,57 +123,68 @@ class AuthController extends Controller
 
     public function login(Request $request) //login normal
     {
-        $rules = [
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|string'
-        ];
+        try {
 
-        $validation = validator::make($request->all(), $rules);
+            $rules = [
+                'email' => 'required|email|exists:users,email',
+                'password' => 'required|string'
+            ];
 
-        if ($validation->fails()) {
-            return $this->responseMessage(400, false, $validation->messages());
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails()) {
+                return $this->responseMessage(400, false, $validation->messages());
+            }
+
+            $credentials = $request->only(['email', 'password']);
+
+            if (!$token = auth()->attempt($credentials)) {
+                return $this->responseMessage(400, false, 'email or password error');
+            }
+
+            $user = Auth::user();
+
+            if ($user->email_verified_at == null)
+                return $this->responseMessage(202, false, 'Email Needed To Verify');
+
+            $user->access_token = $token;
+            $user->token_type = 'bearer';
+            $user->expires_in = auth()->factory()->getTTL() * 60;
+            return $this->responseMessage(200, true, 'success', $user);
+
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
         }
-
-        $credentials = $request->only(['email', 'password']);
-
-        if (!$token = auth()->attempt($credentials)) {
-            return $this->responseMessage(400, false, 'email or password error');
-        }
-
-        $user = Auth::user();
-
-        if ($user->email_verified_at == null)
-            return $this->responseMessage(202, false, 'Email Needed To Verify');
-
-        $user->access_token = $token;
-        $user->token_type = 'bearer';
-        $user->expires_in = auth()->factory()->getTTL() * 60;
-        return $this->responseMessage(200, true, 'success', $user);
     }
 
     public function register(Request $request) //register new user
     {
-        $rules = [
-            'name' => 'required|string|between:2,100',
-            'email' => 'required|email|string|max:100|unique:users,email',
-            'password' => 'required|string|min:8|confirmed'
-        ];
+        try {
 
-        $validation = validator::make($request->all(), $rules);
+            $rules = [
+                'name' => 'required|string|between:2,100',
+                'email' => 'required|email|string|max:100|unique:users,email',
+                'password' => 'required|string|min:8|confirmed'
+            ];
 
-        if ($validation->fails()) {
-            return $this->responseMessage(400, false, $validation->messages());
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails()) {
+                return $this->responseMessage(400, false, $validation->messages());
+            }
+
+            $user = User::create(array_merge(
+                $validation->validated(), [
+                    'password' => Hash::make($request->password)
+                ]
+            ));
+
+            $user->notify(new EmailVerification()); //send Email verification
+
+            return $this->responseMessage(201, true, 'Email verification Has Been Send');
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
         }
-
-        $user = User::create(array_merge(
-            $validation->validated(), [
-                'password' => Hash::make($request->password)
-            ]
-        ));
-
-        $user->notify(new EmailVerification()); //send Email verification
-
-        return $this->responseMessage(201, true, 'Email verification Has Been Send');
     }
 
     public function profile()
@@ -192,86 +204,107 @@ class AuthController extends Controller
         $data['access_token'] = auth()->refresh();
         $data['token_type'] = 'bearer';
         $data['expires_in'] = auth()->factory()->getTTL() * 60;
-        return $this->responseMessage(200, true, 'success',$data);
+        return $this->responseMessage(200, true, 'success', $data);
     }
 
     public function loginWithGoogle(Request $request)
     {
-        $redirectUrl = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
-        return $this->responseMessage(200, true, 'success', ['redirect_url' => $redirectUrl]);
+        try {
+
+            $redirectUrl = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
+            return $this->responseMessage(200, true, 'success', ['redirect_url' => $redirectUrl]);
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
+        }
     }
 
     public function loginWithFacebook(Request $request)
     {
-        $redirectUrl = Socialite::driver('facebook')->stateless()->redirect()->getTargetUrl();
-        return $this->responseMessage(200, true, 'success', ['redirect_url' => $redirectUrl]);
+        try {
+
+            $redirectUrl = Socialite::driver('facebook')->stateless()->redirect()->getTargetUrl();
+            return $this->responseMessage(200, true, 'success', ['redirect_url' => $redirectUrl]);
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
+        }
     }
 
     public function loginWithGoogleCallback(Request $request) // login with google
     {
-        $user = Socialite::driver('google')->stateless()->user();
+        try {
 
-        $existingUser = User::where('email', $user->email)->first();
+            $user = Socialite::driver('google')->stateless()->user();
 
-        if ($existingUser) {
+            $existingUser = User::where('email', $user->email)->first();
 
-            $token = JWTAuth::fromUser($existingUser);
+            if ($existingUser) {
 
-            $existingUser->access_token = $token;
-            $existingUser->token_type = 'bearer';
-            $existingUser->expires_in = auth()->factory()->getTTL() * 60;
+                $token = JWTAuth::fromUser($existingUser);
 
-            return $this->responseMessage(200, true, 'success', $existingUser);
+                $existingUser->access_token = $token;
+                $existingUser->token_type = 'bearer';
+                $existingUser->expires_in = auth()->factory()->getTTL() * 60;
 
-        } else {
-            $newUser = new User();
-            $newUser->name = $user->name;
-            $newUser->email = $user->email;
-            $newUser->email_verified_at = now();
-            $newUser->password = Hash::make($user->email);
-            $newUser->save();
+                return $this->responseMessage(200, true, 'success', $existingUser);
 
-            $token = JWTAuth::fromUser($newUser);
+            } else {
+                $newUser = new User();
+                $newUser->name = $user->name;
+                $newUser->email = $user->email;
+                $newUser->email_verified_at = now();
+                $newUser->password = Hash::make($user->email);
+                $newUser->save();
 
-            $newUser->access_token = $token;
-            $newUser->token_type = 'bearer';
-            $newUser->expires_in = auth()->factory()->getTTL() * 60;
+                $token = JWTAuth::fromUser($newUser);
 
-            return $this->responseMessage(200, true, 'success', $newUser);
+                $newUser->access_token = $token;
+                $newUser->token_type = 'bearer';
+                $newUser->expires_in = auth()->factory()->getTTL() * 60;
+
+                return $this->responseMessage(200, true, 'success', $newUser);
+            }
+
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
         }
     }
 
     public function loginWithFacebookCallback(Request $request)  // login with facebook
     {
-        $user = Socialite::driver('facebook')->stateless()->user();
+        try {
 
-        $existingUser = User::where('email', $user->email)->first();
+            $user = Socialite::driver('facebook')->stateless()->user();
 
-        if ($existingUser) {
+            $existingUser = User::where('email', $user->email)->first();
 
-            $token = JWTAuth::fromUser($existingUser);
+            if ($existingUser) {
 
-            $existingUser->access_token = $token;
-            $existingUser->token_type = 'bearer';
-            $existingUser->expires_in = auth()->factory()->getTTL() * 60;
+                $token = JWTAuth::fromUser($existingUser);
 
-            return $this->responseMessage(200, true, 'success', $existingUser);
+                $existingUser->access_token = $token;
+                $existingUser->token_type = 'bearer';
+                $existingUser->expires_in = auth()->factory()->getTTL() * 60;
 
-        } else {
-            $newUser = new User();
-            $newUser->name = $user->name;
-            $newUser->email = $user->email;
-            $newUser->email_verified_at = now();
-            $newUser->password = Hash::make($user->email);
-            $newUser->save();
+                return $this->responseMessage(200, true, 'success', $existingUser);
 
-            $token = JWTAuth::fromUser($newUser);
+            } else {
+                $newUser = new User();
+                $newUser->name = $user->name;
+                $newUser->email = $user->email;
+                $newUser->email_verified_at = now();
+                $newUser->password = Hash::make($user->email);
+                $newUser->save();
 
-            $newUser->access_token = $token;
-            $newUser->token_type = 'bearer';
-            $newUser->expires_in = auth()->factory()->getTTL() * 60;
+                $token = JWTAuth::fromUser($newUser);
 
-            return $this->responseMessage(200, true, 'success', $newUser);
+                $newUser->access_token = $token;
+                $newUser->token_type = 'bearer';
+                $newUser->expires_in = auth()->factory()->getTTL() * 60;
+
+                return $this->responseMessage(200, true, 'success', $newUser);
+            }
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
         }
     }
 
@@ -283,9 +316,9 @@ class AuthController extends Controller
 
         $validation = validator::make($request->all(), $rules);
 
-        if ($validation->fails()) {
+        if ($validation->fails())
             return $this->responseMessage(400, false, $validation->messages());
-        }
+
 
         try {
 
@@ -294,6 +327,67 @@ class AuthController extends Controller
             $user->save();
 
             return $this->responseMessage(200, true, 'password updated success');
+
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
+        }
+    }
+
+    public function addDailyTracker(Request $request)
+    {
+        try {
+
+            $rules = [
+                'type' => 'required|string|in:morning,evening,after_prayer,charity,quran'
+            ];
+
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails())
+                return $this->responseMessage(400, false, [$validation->messages(), 'types' => ['morning', 'evening', 'after_prayer', 'charity', 'quran']]);
+
+
+            DailyTracker::updateorcreate([
+                'user_id' => \auth()->user()->id,
+                'date' => date('Y-m-d')
+            ], [
+                $request->type => true
+            ]);
+
+            return $this->responseMessage(200, true, 'success');
+
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, 'an error occurred');
+        }
+    }
+
+    public function getDailyTracker()
+    {
+        try {
+
+            $dailyTrackers = \auth()->user()->tracker;
+            foreach ($dailyTrackers as $dailyTracker) {
+                $count = 0;
+                if ($dailyTracker->morning == true)
+                    $count += 1;
+
+                if ($dailyTracker->evening == true)
+                    $count += 1;
+
+                if ($dailyTracker->after_prayer == true)
+                    $count += 1;
+
+                if ($dailyTracker->charity == true)
+                    $count += 1;
+
+                if ($dailyTracker->quran == true)
+                    $count += 1;
+
+                $dailyTracker->count = $count / 5 * 100;
+            }
+
+            return $this->responseMessage(200, true, 'success', $dailyTrackers);
+
 
         } catch (\Exception $e) {
             return $this->responseMessage(400, false, 'an error occurred');

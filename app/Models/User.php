@@ -65,4 +65,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function tracker()
+    {
+        return $this->hasMany(DailyTracker::class,'user_id');
+    }
 }
