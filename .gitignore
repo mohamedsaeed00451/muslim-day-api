@@ -3,8 +3,6 @@
 /public/build
 /public/hot
 /public/storage
-/public/uploads/audios
-/public/uploads/videos
 /storage/*.key
 /vendor
 .env.backup

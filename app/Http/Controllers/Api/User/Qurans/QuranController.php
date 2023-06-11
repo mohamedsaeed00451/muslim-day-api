@@ -114,10 +114,20 @@ class QuranController extends Controller
         return $this->responseMessage(200, true, 'success', $audio);
     }
 
-    public function getVideos()
+    public function getVideos(Request $request)
     {
         try {
-            $videos = Video::all();
+
+            $rules = [
+                'type' => 'required|string|in:prayers,awareness,family,jurisprudence,lessons,sup_rem,tafisir_quran,womens',
+            ];
+
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails())
+                return $this->responseMessage(400, false, $validation->messages(),['types' => ['prayers','awareness','family','jurisprudence','lessons','sup_rem','tafisir_quran','womens']]);
+
+            $videos = Video::where('type',$request->type)->get();
             foreach ($videos as $video) {
                 $video->video = $this->getPath('videos', $video->video);
             }

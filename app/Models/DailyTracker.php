@@ -9,7 +9,7 @@ class DailyTracker extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id','date','morning','evening','after_prayer','charity','quran'];
+    protected $fillable = ['user_id','date','morning','evening','after_prayer','charity','quran','adan'];
     protected $hidden = ['created_at','updated_at'];
 
     public function user()

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->boolean('after_prayer')->default(false);
             $table->boolean('charity')->default(false);
             $table->boolean('quran')->default(false);
+            $table->boolean('adan')->default(false);
             $table->timestamps();
         });
     }

@@ -338,13 +338,13 @@ class AuthController extends Controller
         try {
 
             $rules = [
-                'type' => 'required|string|in:morning,evening,after_prayer,charity,quran'
+                'type' => 'required|string|in:morning,evening,after_prayer,charity,quran,adan'
             ];
 
             $validation = validator::make($request->all(), $rules);
 
             if ($validation->fails())
-                return $this->responseMessage(400, false, [$validation->messages(), 'types' => ['morning', 'evening', 'after_prayer', 'charity', 'quran']]);
+                return $this->responseMessage(400, false, [$validation->messages(), 'types' => ['morning', 'evening', 'after_prayer', 'charity', 'quran','adan']]);
 
 
             DailyTracker::updateorcreate([
@@ -383,7 +383,10 @@ class AuthController extends Controller
                 if ($dailyTracker->quran == true)
                     $count += 1;
 
-                $dailyTracker->count = $count / 5 * 100;
+                if ($dailyTracker->adan == true)
+                    $count += 1;
+
+                $dailyTracker->count = $count / 6 * 100;
             }
 
             return $this->responseMessage(200, true, 'success', $dailyTrackers);
