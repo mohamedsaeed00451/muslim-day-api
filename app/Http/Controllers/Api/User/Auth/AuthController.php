@@ -32,8 +32,8 @@ class AuthController extends Controller
         try {
 
             $rules = [
-                'email' => 'required|email|exists:users,email',
-                'otp' => 'required|min:6|max:6'
+                'email' => 'required|string|email|exists:users,email',
+                'otp' => 'required|min:6|max:6|regex:/^[0-9]*$/i'
             ];
 
             $validation = validator::make($request->all(), $rules);
@@ -68,7 +68,7 @@ class AuthController extends Controller
     {
         try {
             $rules = [
-                'email' => 'required|email|exists:users,email',
+                'email' => 'required|string|email|exists:users,email',
             ];
 
             $validation = validator::make($request->all(), $rules);
@@ -126,7 +126,7 @@ class AuthController extends Controller
         try {
 
             $rules = [
-                'email' => 'required|email|exists:users,email',
+                'email' => 'required|string|email|exists:users,email',
                 'password' => 'required|string'
             ];
 
@@ -162,7 +162,7 @@ class AuthController extends Controller
         try {
 
             $rules = [
-                'name' => 'required|string|between:2,100',
+                'name' => 'required|alpha|between:5,100',
                 'email' => 'required|email|string|max:100|unique:users,email',
                 'password' => 'required|string|min:8|confirmed',
                 'terms_and_conditions' => 'required|accepted'  //yes or on or true or 1
@@ -339,7 +339,7 @@ class AuthController extends Controller
         try {
 
             $rules = [
-                'type' => 'required|string|in:morning,evening,after_prayer,charity,quran,adan'
+                'type' => 'required|alpha|in:morning,evening,after_prayer,charity,quran,adan'
             ];
 
             $validation = validator::make($request->all(), $rules);
