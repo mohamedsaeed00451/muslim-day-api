@@ -54,12 +54,12 @@ class AuthController extends Controller
             $token = JWTAuth::fromUser($user);
             $user->access_token = $token;
             $user->token_type = 'bearer';
-            $user->expires_in = null;
+            $user->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
             return $this->responseMessage(200, true, __('messages_trans.success'), $user);
 
         } catch (\Exception $e) {
 
-            return $this->responseMessage(400, false, __('messages_trans.error'));
+            return $this->responseMessage(400, false, $e->getMessage());
 
         }
     }
@@ -76,7 +76,7 @@ class AuthController extends Controller
             if ($validation->fails())
                 return $this->responseMessage(400, false, $validation->messages());
 
-            $user = $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $request->email)->first();
             $user->notify(new EmailVerification());
             return $this->responseMessage(200, true, __('messages_trans.verification'));
 
@@ -149,7 +149,7 @@ class AuthController extends Controller
 
             $user->access_token = $token;
             $user->token_type = 'bearer';
-            $user->expires_in = null;
+            $user->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
             return $this->responseMessage(200, true, __('messages_trans.success'), $user);
 
         } catch (\Exception $e) {
@@ -244,7 +244,7 @@ class AuthController extends Controller
 
                 $existingUser->access_token = $token;
                 $existingUser->token_type = 'bearer';
-                $existingUser->expires_in = null;
+                $existingUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $existingUser);
 
@@ -260,7 +260,7 @@ class AuthController extends Controller
 
                 $newUser->access_token = $token;
                 $newUser->token_type = 'bearer';
-                $newUser->expires_in = null;
+                $newUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $newUser);
             }
@@ -284,7 +284,7 @@ class AuthController extends Controller
 
                 $existingUser->access_token = $token;
                 $existingUser->token_type = 'bearer';
-                $existingUser->expires_in = null;
+                $existingUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $existingUser);
 
@@ -300,7 +300,7 @@ class AuthController extends Controller
 
                 $newUser->access_token = $token;
                 $newUser->token_type = 'bearer';
-                $newUser->expires_in = null;
+                $newUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $newUser);
             }
