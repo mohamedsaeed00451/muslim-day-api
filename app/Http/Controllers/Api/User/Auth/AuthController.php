@@ -54,12 +54,12 @@ class AuthController extends Controller
             $token = JWTAuth::fromUser($user);
             $user->access_token = $token;
             $user->token_type = 'bearer';
-            $user->expires_in = auth()->factory()->getTTL() * 60;
-            return $this->responseMessage(200, true, 'success', $user);
+            $user->expires_in = null;
+            return $this->responseMessage(200, true, __('messages_trans.success'), $user);
 
         } catch (\Exception $e) {
 
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
 
         }
     }
@@ -78,11 +78,11 @@ class AuthController extends Controller
 
             $user = $user = User::where('email', $request->email)->first();
             $user->notify(new EmailVerification());
-            return $this->responseMessage(200, true, 'Email verification Has Been Send');
+            return $this->responseMessage(200, true, __('messages_trans.verification'));
 
         } catch (\Exception $e) {
 
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
 
         }
     }
@@ -114,10 +114,10 @@ class AuthController extends Controller
                 $dayType = 'Eid';
             }
 
-            return $this->responseMessage(200, true, 'success', ['day_type' => $dayType, 'types' => ['Day', 'Eid', 'Ramadan']]);
+            return $this->responseMessage(200, true, __('messages_trans.success'), ['day_type' => $dayType, 'types' => ['Day', 'Eid', 'Ramadan']]);
 
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -139,21 +139,21 @@ class AuthController extends Controller
             $credentials = $request->only(['email', 'password']);
 
             if (!$token = auth()->attempt($credentials)) {
-                return $this->responseMessage(400, false, 'email or password error');
+                return $this->responseMessage(400, false,  __('messages_trans.email_password'));
             }
 
             $user = Auth::user();
 
             if ($user->email_verified_at == null)
-                return $this->responseMessage(202, false, 'Email Needed To Verify');
+                return $this->responseMessage(202, false, __('messages_trans.verify'));
 
             $user->access_token = $token;
             $user->token_type = 'bearer';
-            $user->expires_in = auth()->factory()->getTTL() * 60;
-            return $this->responseMessage(200, true, 'success', $user);
+            $user->expires_in = null;
+            return $this->responseMessage(200, true, __('messages_trans.success'), $user);
 
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -164,7 +164,8 @@ class AuthController extends Controller
             $rules = [
                 'name' => 'required|string|between:2,100',
                 'email' => 'required|email|string|max:100|unique:users,email',
-                'password' => 'required|string|min:8|confirmed'
+                'password' => 'required|string|min:8|confirmed',
+                'terms_and_conditions' => 'required|accepted'  //yes or on or true or 1
             ];
 
             $validation = validator::make($request->all(), $rules);
@@ -181,30 +182,30 @@ class AuthController extends Controller
 
             $user->notify(new EmailVerification()); //send Email verification
 
-            return $this->responseMessage(201, true, 'Email verification Has Been Send');
+            return $this->responseMessage(201, true, __('messages_trans.verification'));
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
     public function profile()
     {
         $data = auth()->user();
-        return $this->responseMessage(200, true, 'success', $data);
+        return $this->responseMessage(200, true, __('messages_trans.success'), $data);
     }
 
     public function logout()
     {
         auth()->logout();
-        return $this->responseMessage(200, true, 'successfully logged out');
+        return $this->responseMessage(200, true, __('messages_trans.logout'));
     }
 
     public function refresh()
     {
         $data['access_token'] = auth()->refresh();
         $data['token_type'] = 'bearer';
-        $data['expires_in'] = auth()->factory()->getTTL() * 60;
-        return $this->responseMessage(200, true, 'success', $data);
+        $data['expires_in'] = null;
+        return $this->responseMessage(200, true, __('messages_trans.success'), $data);
     }
 
     public function loginWithGoogle(Request $request)
@@ -212,9 +213,9 @@ class AuthController extends Controller
         try {
 
             $redirectUrl = Socialite::driver('google')->stateless()->redirect()->getTargetUrl();
-            return $this->responseMessage(200, true, 'success', ['redirect_url' => $redirectUrl]);
+            return $this->responseMessage(200, true, __('messages_trans.success'), ['redirect_url' => $redirectUrl]);
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -223,9 +224,9 @@ class AuthController extends Controller
         try {
 
             $redirectUrl = Socialite::driver('facebook')->stateless()->redirect()->getTargetUrl();
-            return $this->responseMessage(200, true, 'success', ['redirect_url' => $redirectUrl]);
+            return $this->responseMessage(200, true, __('messages_trans.success'), ['redirect_url' => $redirectUrl]);
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -243,9 +244,9 @@ class AuthController extends Controller
 
                 $existingUser->access_token = $token;
                 $existingUser->token_type = 'bearer';
-                $existingUser->expires_in = auth()->factory()->getTTL() * 60;
+                $existingUser->expires_in = null;
 
-                return $this->responseMessage(200, true, 'success', $existingUser);
+                return $this->responseMessage(200, true, __('messages_trans.success'), $existingUser);
 
             } else {
                 $newUser = new User();
@@ -259,13 +260,13 @@ class AuthController extends Controller
 
                 $newUser->access_token = $token;
                 $newUser->token_type = 'bearer';
-                $newUser->expires_in = auth()->factory()->getTTL() * 60;
+                $newUser->expires_in = null;
 
-                return $this->responseMessage(200, true, 'success', $newUser);
+                return $this->responseMessage(200, true, __('messages_trans.success'), $newUser);
             }
 
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -283,9 +284,9 @@ class AuthController extends Controller
 
                 $existingUser->access_token = $token;
                 $existingUser->token_type = 'bearer';
-                $existingUser->expires_in = auth()->factory()->getTTL() * 60;
+                $existingUser->expires_in = null;
 
-                return $this->responseMessage(200, true, 'success', $existingUser);
+                return $this->responseMessage(200, true, __('messages_trans.success'), $existingUser);
 
             } else {
                 $newUser = new User();
@@ -299,12 +300,12 @@ class AuthController extends Controller
 
                 $newUser->access_token = $token;
                 $newUser->token_type = 'bearer';
-                $newUser->expires_in = auth()->factory()->getTTL() * 60;
+                $newUser->expires_in = null;
 
-                return $this->responseMessage(200, true, 'success', $newUser);
+                return $this->responseMessage(200, true, __('messages_trans.success'), $newUser);
             }
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -326,10 +327,10 @@ class AuthController extends Controller
             $user->password = Hash::make($request->password);
             $user->save();
 
-            return $this->responseMessage(200, true, 'password updated success');
+            return $this->responseMessage(200, true, __('messages_trans.password'));
 
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -354,10 +355,10 @@ class AuthController extends Controller
                 $request->type => true
             ]);
 
-            return $this->responseMessage(200, true, 'success');
+            return $this->responseMessage(200, true, __('messages_trans.success'));
 
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 
@@ -389,11 +390,11 @@ class AuthController extends Controller
                 $dailyTracker->count = $count / 6 * 100;
             }
 
-            return $this->responseMessage(200, true, 'success', $dailyTrackers);
+            return $this->responseMessage(200, true, __('messages_trans.success'), $dailyTrackers);
 
 
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 

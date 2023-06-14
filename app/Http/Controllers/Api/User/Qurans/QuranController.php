@@ -10,7 +10,6 @@ use App\Models\Surah;
 use App\Models\Video;
 use App\Traits\GeneralTrait;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class QuranController extends Controller
@@ -27,37 +26,38 @@ class QuranController extends Controller
     {
         $surah = Surah::find($id);
         if (!$surah)
-            return $this->responseMessage(404, false, 'id not found');
+            return $this->responseMessage(404, false, __('messages_trans.id_not_found'));
 
         $ayahs = $surah->ayahs;
-        return $this->responseMessage(200, true, 'success', $ayahs);
+        return $this->responseMessage(200, true, __('messages_trans.success'), $ayahs);
     }
 
     public function getTafsirSurah($id) // Surah id
     {
         $surah = Surah::find($id);
         if (!$surah)
-            return $this->responseMessage(404, false, 'id not found');
+            return $this->responseMessage(404, false, __('messages_trans.id_not_found'));
 
         $tafsir = $surah->tafsirs;
-        return $this->responseMessage(200, true, 'success', $tafsir);
+        return $this->responseMessage(200, true, __('messages_trans.success'), $tafsir);
     }
 
     public function getTafsirAyah($id) // Ayah id
     {
         $ayah = Ayah::find($id);
         if (!$ayah)
-            return $this->responseMessage(404, false, 'id not found');
+            return $this->responseMessage(404, false, __('messages_trans.id_not_found'));
 
         $tafsir = $ayah->tafsir;
-        return $this->responseMessage(200, true, 'success', $tafsir);
+        $tafsir->ayah_id = $ayah->number_in_surah; //number in surah
+        return $this->responseMessage(200, true, __('messages_trans.success'), $tafsir);
     }
 
     public function getReciters()
     {
         $reciters = Reciter::select('id', 'name_' . app()->getLocale() . ' as name', 'photo')->get();
         if (!$reciters)
-            return $this->responseMessage(204, false, 'no data');
+            return $this->responseMessage(204, false, __('messages_trans.no_data'));
 
         foreach ($reciters as $reciter) {
             $photo_name = $reciter->photo;
@@ -66,28 +66,28 @@ class QuranController extends Controller
             }
         }
 
-        return $this->responseMessage(200, true, 'success', $reciters);
+        return $this->responseMessage(200, true, __('messages_trans.success'), $reciters);
     }
 
     public function getReciterSurahs($id) // Reciter id
     {
         $reciter = Reciter::find($id);
         if (!$reciter)
-            return $this->responseMessage(404, false, 'id not found');
+            return $this->responseMessage(404, false, __('messages_trans.id_not_found'));
 
         $surahs = $reciter->surahs()->select('surahs.id', 'name_' . app()->getLocale() . ' as name')->get();
-        return $this->responseMessage(200, true, 'success', $surahs);
+        return $this->responseMessage(200, true,  __('messages_trans.success'), $surahs);
     }
 
     public function getSurahReciters($id) // Surah id
     {
         $surah = Surah::find($id);
         if (!$surah)
-            return $this->responseMessage(404, false, 'id not found');
+            return $this->responseMessage(404, false, __('messages_trans.id_not_found'));
 
         $reciters = $surah->reciters()->select('reciters.id', 'name_' . app()->getLocale() . ' as name')->get();
 
-        return $this->responseMessage(200, true, 'success', $reciters);
+        return $this->responseMessage(200, true, __('messages_trans.success'), $reciters);
     }
 
     public function getSurahAudio(Request $request)
@@ -108,10 +108,10 @@ class QuranController extends Controller
             ->first();
 
         if (!$audio)
-            return $this->responseMessage(400, false, 'no data');
+            return $this->responseMessage(400, false, __('messages_trans.no_data'));
 
         $audio->audio = $this->getPath('audios', $audio->audio); //get http path
-        return $this->responseMessage(200, true, 'success', $audio);
+        return $this->responseMessage(200, true, __('messages_trans.success'), $audio);
     }
 
     public function getVideos(Request $request)
@@ -131,9 +131,9 @@ class QuranController extends Controller
             foreach ($videos as $video) {
                 $video->video = $this->getPath('videos', $video->video);
             }
-            return $this->responseMessage(200, true, 'success', $videos);
+            return $this->responseMessage(200, true, __('messages_trans.success'), $videos);
         } catch (\Exception $e) {
-            return $this->responseMessage(400, false, $e->getMessage());
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 

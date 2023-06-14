@@ -17,8 +17,8 @@ class EmailVerification extends Notification
      */
     public function __construct()
     {
-        $this->message = 'Use The Blow Code For Verification Process';
-        $this->subject = 'Verification Needed';
+        $this->message = __('messages_trans.verification_process');
+        $this->subject = __('messages_trans.verification_needed');
         $this->otp = new Otp;
     }
 
@@ -41,9 +41,9 @@ class EmailVerification extends Notification
         return (new MailMessage)
             ->mailer('smtp')
             ->subject($this->subject)
-            ->greeting('Hello '.$notifiable->name)
+            ->greeting(__('messages_trans.hello').' '.$notifiable->name)
             ->line($this->message)
-            ->line('code : ' .$otp->token);
+            ->line(__('messages_trans.code').' : '.$otp->token);
     }
 
     /**

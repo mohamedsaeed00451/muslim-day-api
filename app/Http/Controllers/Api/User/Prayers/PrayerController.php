@@ -15,9 +15,9 @@ class PrayerController extends Controller
         try {
             $response = Http::get('https://api.aladhan.com/v1/timingsByAddress/'.date('d-m-Y').'?address=Egypt,Africa&method=8');
             $data = $response->json();
-            return $this->responseMessage(200, true, 'success',$data['data']);
+            return $this->responseMessage(200, true, __('messages_trans.success'),$data['data']);
         }catch (\Exception $e) {
-            return $this->responseMessage(400, false, 'an error occurred');
+            return $this->responseMessage(400, false, __('messages_trans.error'));
         }
     }
 

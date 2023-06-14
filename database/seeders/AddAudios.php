@@ -18,8 +18,8 @@ class AddAudios extends Seeder
             $file_name = $number .'.'. 'mp3';
             Audio::create([
                 'surah_id' => $i,
-                'reciter_id' => 6,
-                'audio' => 'quran/al-qazabri/'.$file_name
+                'reciter_id' => 12,
+                'audio' => 'quran/al-kintawi/'.$file_name
             ]);
         }
 
