@@ -54,7 +54,7 @@ class AuthController extends Controller
             $token = JWTAuth::fromUser($user);
             $user->access_token = $token;
             $user->token_type = 'bearer';
-            $user->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
+            $user->expires_in = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
             return $this->responseMessage(200, true, __('messages_trans.success'), $user);
 
         } catch (\Exception $e) {
@@ -139,7 +139,7 @@ class AuthController extends Controller
             $credentials = $request->only(['email', 'password']);
 
             if (!$token = auth()->attempt($credentials)) {
-                return $this->responseMessage(400, false,  __('messages_trans.email_password'));
+                return $this->responseMessage(400, false, __('messages_trans.email_password'));
             }
 
             $user = Auth::user();
@@ -149,7 +149,7 @@ class AuthController extends Controller
 
             $user->access_token = $token;
             $user->token_type = 'bearer';
-            $user->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
+            $user->expires_in = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
             return $this->responseMessage(200, true, __('messages_trans.success'), $user);
 
         } catch (\Exception $e) {
@@ -204,7 +204,7 @@ class AuthController extends Controller
     {
         $data['access_token'] = auth()->refresh();
         $data['token_type'] = 'bearer';
-        $data['expires_in'] = null;
+        $data['expires_in'] = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
         return $this->responseMessage(200, true, __('messages_trans.success'), $data);
     }
 
@@ -244,7 +244,7 @@ class AuthController extends Controller
 
                 $existingUser->access_token = $token;
                 $existingUser->token_type = 'bearer';
-                $existingUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
+                $existingUser->expires_in = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $existingUser);
 
@@ -260,7 +260,7 @@ class AuthController extends Controller
 
                 $newUser->access_token = $token;
                 $newUser->token_type = 'bearer';
-                $newUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
+                $newUser->expires_in = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $newUser);
             }
@@ -284,7 +284,7 @@ class AuthController extends Controller
 
                 $existingUser->access_token = $token;
                 $existingUser->token_type = 'bearer';
-                $existingUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
+                $existingUser->expires_in = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $existingUser);
 
@@ -300,7 +300,7 @@ class AuthController extends Controller
 
                 $newUser->access_token = $token;
                 $newUser->token_type = 'bearer';
-                $newUser->expires_in = auth()->factory()->getTTL() * 30*24*60; //30 day
+                $newUser->expires_in = auth()->factory()->getTTL() * 30 * 24 * 60; //30 day
 
                 return $this->responseMessage(200, true, __('messages_trans.success'), $newUser);
             }
@@ -334,6 +334,37 @@ class AuthController extends Controller
         }
     }
 
+    public function resetPassword(Request $request)
+    {
+        try {
+
+            $rules = [
+                'password' => 'required|string|min:8|confirmed',
+                'email' => 'required|string|email|exists:users,email',
+                'otp' => 'required|min:6|max:6|regex:/^[0-9]*$/i'
+            ];
+
+            $validation = validator::make($request->all(), $rules);
+
+            if ($validation->fails())
+                return $this->responseMessage(400, false, $validation->messages());
+
+            $otpVerify = $this->otp->validate($request->email, $request->otp);
+
+            if (!$otpVerify->status)
+                return $this->responseMessage(401, false, $otpVerify);
+
+            $user = User::where('email',$request->email)->first();
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            return $this->responseMessage(200, true, __('messages_trans.password'));
+
+        } catch (\Exception $e) {
+            return $this->responseMessage(400, false, __('messages_trans.error'));
+        }
+    }
+
     public function addDailyTracker(Request $request)
     {
         try {
@@ -345,7 +376,7 @@ class AuthController extends Controller
             $validation = validator::make($request->all(), $rules);
 
             if ($validation->fails())
-                return $this->responseMessage(400, false, [$validation->messages(), 'types' => ['morning', 'evening', 'after_prayer', 'charity', 'quran','adan']]);
+                return $this->responseMessage(400, false, [$validation->messages(), 'types' => ['morning', 'evening', 'after_prayer', 'charity', 'quran', 'adan']]);
 
 
             DailyTracker::updateorcreate([
