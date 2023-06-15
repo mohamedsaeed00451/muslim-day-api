@@ -61,7 +61,7 @@ Route::group(
         //*********************** Email ***************************//
         Route::post('/email-verify-otp', 'emailVerify'); //check code
         Route::get('/email-verify-otp', 'resendOtpVerification'); // Resend Code
-        //*********************** Reset Password ***************************//
+        //*********************** Reset Password ****************************//
         Route::post('/reset-password', 'resetPassword');
 
         Route::middleware(['jwt.verify'])->group(function () { //Auth JWT
