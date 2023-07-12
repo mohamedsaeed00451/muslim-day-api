@@ -15,6 +15,10 @@ class NotificationController extends Controller
     {
         try {
 
+//           // https://ia803007.us.archive.org/31/items/nice_tone/nice_tone.mp3
+//          return $this->sendNotifications('تحية خاصة لمرسى', 'احلى مسا عليك', 'https://ia803006.us.archive.org/7/items/stone_201906/stone.mp3');
+//           // return $this->getPath('audios','notification/prayer.mp3');
+
             $currentTime = Carbon::now();
             $currentTime = Carbon::parse($currentTime)->addMinute(10);
             $currentTime = $currentTime->format('H:i');
